@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: IAM User & Policies Template
+
+Parameters:
+  IAMUserName:
+    Type: String
+    Description: IAM User name
+
+  S3BucketName:
+    Type: String
+    Description: Name of the S3 Bucket
+
+Resources:
+  NewIAMUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Ref IAMUserName
+      Path: "/"
+      Policies:
+      - PolicyName: GatsbyBucketPolicy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - s3:GetBucketLocation
+            Resource:
+            - arn:aws:s3:::*
+          - Effect: Allow
+            Action:
+            - s3:ListBucket
+            Resource:
+            - !Sub arn:aws:s3:::${S3BucketName}
+          - Effect: Allow
+            Action:
+            - s3:PutObject
+            - s3:GetObject
+            - s3:DeleteObject
+            Resource:
+            - !Sub arn:aws:s3:::${S3BucketName}/*
+  NewIAMUserAccesskey:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName:
+        !Ref NewIAMUser
+      Status: Active
+  AccessKeySecret:
+    Type: AWS::SecretsManager::Secret
+    Properties: 
+      Description: !Sub "These are the credentials for the IAM User ${NewIAMUser}"
+      SecretString: !Join
+        - ''
+        - - '{"AccessKeyId":"'
+          - !Ref NewIAMUserAccesskey
+          - '","SecretAccessKey":"'
+          - !GetAtt NewIAMUserAccesskey.SecretAccessKey
+          - '"}'

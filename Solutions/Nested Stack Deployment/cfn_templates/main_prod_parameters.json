@@ -1,0 +1,194 @@
+[
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "prod"
+  }, 
+  {
+    "ParameterKey": "Project",
+    "ParameterValue": "duobank"
+  }, 
+  {
+    "ParameterKey": "CreatedBy",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "CfnTemplateS3BucketName",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "CfnTemplateS3BucketKey",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "VPCCIDR",
+    "ParameterValue": "10.64.0.0/19"
+  },  
+  {
+    "ParameterKey": "VPCAZ1PublicSubnetCIDR",
+    "ParameterValue": "10.64.0.0/23"
+  }, 
+  {
+    "ParameterKey": "VPCAZ1PrivateSubnetCIDR",
+    "ParameterValue": "10.10.66.0/23"
+  }, 
+  {
+    "ParameterKey": "VPCAZ1RFFSubnetCIDR",
+    "ParameterValue": "10.10.68.0/23"
+  }, 
+  {
+    "ParameterKey": "VPCAZ2PublicSubnetCIDR",
+    "ParameterValue": "10.10.70.0/23"
+  }, 
+  {
+    "ParameterKey": "VPCAZ2PrivateSubnetCIDR",
+    "ParameterValue": "10.10.72.0/23"
+  }, 
+  {
+    "ParameterKey": "VPCAZ2RFFSubnetCIDR",
+    "ParameterValue": "10.10.74.0/23"
+  }, 
+  {
+    "ParameterKey": "VPCAZ3PublicSubnetCIDR",
+    "ParameterValue": "10.10.76.0/23"
+  }, 
+  {
+    "ParameterKey": "VPCAZ3PrivateSubnetCIDR",
+    "ParameterValue": "10.10.78.0/23"
+  }, 
+  {
+    "ParameterKey": "VPCAZ3RFFSubnetCIDR",
+    "ParameterValue": "10.10.80.0/23"
+  }, 
+  {
+    "ParameterKey": "RFFSubnetsCreation",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "NatGatewayCreation",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "LambdaFunctionHandler",
+    "ParameterValue": "index.handler"
+  }, 
+  {
+    "ParameterKey": "LambdaFunctionMemory",
+    "ParameterValue": "128"
+  }, 
+  {
+    "ParameterKey": "LambdaFunctionRuntime",
+    "ParameterValue": "python3.8"
+  },
+  {
+    "ParameterKey": "LambdaFunctionLogsRetention",
+    "ParameterValue": "7"
+  }, 
+  {
+    "ParameterKey": "LambdaFunctionS3Bucket",
+    "ParameterValue": ""
+  }, 
+  {
+    "ParameterKey": "LambdaFunctionS3Key",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "LambdaTimeout",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "ApiGatewayStageName",
+    "ParameterValue": ""
+  }, 
+  {
+    "ParameterKey": "ApiGatewayHTTPMethod",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "KMSKeyRotation",
+    "ParameterValue": "False"
+  }, 
+  {
+    "ParameterKey": "KMSMultiRegion",
+    "ParameterValue": "False"
+  },
+  {
+    "ParameterKey": "KMSPendingWindow",
+    "ParameterValue": "7"
+  }, 
+  {
+    "ParameterKey": "DynamoPartitionKeyName",
+    "ParameterValue": "id"
+  },
+  {
+    "ParameterKey": "DynamoSortKeyName",
+    "ParameterValue": "ip"
+  }, 
+  {
+    "ParameterKey": "DynamoReadCapacityUnits",
+    "ParameterValue": "5"
+  },
+  {
+    "ParameterKey": "DynamoWriteCapacityUnits",
+    "ParameterValue": "5"
+  },
+  {
+    "ParameterKey": "DynamoTableName",
+    "ParameterValue": "data"
+  },
+  {
+    "ParameterKey": "S3BucketName",
+    "ParameterValue": "data"
+  },
+  {
+    "ParameterKey": "S3BucketAccessControlling",
+    "ParameterValue": "Private"
+  },
+  {
+    "ParameterKey": "S3BucketSSE",
+    "ParameterValue": "AES256"
+  }, 
+  {
+    "ParameterKey": "S3BucketVersioning",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "S3WebHosting",
+    "ParameterValue": ""
+  }, 
+  {
+    "ParameterKey": "S3WebConfigIndexDoc",
+    "ParameterValue": ""
+  }, 
+  {
+    "ParameterKey": "S3WebConfigErrorDoc",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "SSLCertificateArn",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "CloudFrontPriceClass",
+    "ParameterValue": "PriceClass_100"
+  },
+  {
+    "ParameterKey": "StaticWebsiteDomain",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "CloudFrontRootObject",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "CloudFrontHttpVersion",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "CloudFrontAllowedMethods",
+    "ParameterValue": "DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT"
+  },
+  {
+    "ParameterKey": "CloudFrontCachedMethods",
+    "ParameterValue": "HEAD,GET"
+  }
+]

@@ -1,0 +1,87 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Dynamo DB Table for the Serverless Application
+Parameters:
+  Project:
+    Type: String
+    Description: The project name
+  
+  Environment:
+    Type: String
+    Description: Evironment For Project
+
+  CreatedBy:
+    Type: String
+    Description: Team Responsible for creating the resource
+
+  DynamoPartitionKeyName:
+    Type: String
+    Description: Name of the Partition Key for the table
+
+  DynamoSortKeyName:
+    Type: String
+    Description: Namr of the Sort Key for the table
+
+  DynamoKMSKeyId:
+    Type: String
+    Description: KMS Key Id for the Table
+
+  DynamoReadCapacityUnits:
+    Type: String
+    Description: Read Capacity Units
+
+  DynamoWriteCapacityUnits:
+    Type: String
+    Description: Write Capacity Units
+  
+  DynamoTableName:
+    Type: String
+    Description: Name of the Dynamo DB Table
+
+Resources:
+  
+  ## Dynamo DB Table
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${Project}-${Environment}-${DynamoTableName}"
+      ProvisionedThroughput:
+        ReadCapacityUnits: !Ref DynamoReadCapacityUnits
+        WriteCapacityUnits: !Ref DynamoWriteCapacityUnits
+      KeySchema:
+        -
+          AttributeName: !Ref DynamoPartitionKeyName
+          KeyType: HASH
+        -
+          AttributeName: !Ref DynamoSortKeyName
+          KeyType: RANGE
+      SSESpecification:
+          KMSMasterKeyId: !Ref DynamoKMSKeyId
+          SSEEnabled: True
+          SSEType: KMS
+      AttributeDefinitions:
+        -
+          AttributeName: !Ref DynamoPartitionKeyName
+          AttributeType: N
+        -
+          AttributeName: !Ref DynamoSortKeyName
+          AttributeType: S
+      Tags: 
+        - 
+          Key: "Name"
+          Value: !Sub "${Project}-${Environment}-${DynamoTableName}"
+        - 
+          Key: "Environment"
+          Value: !Ref Environment
+        - 
+          Key: "Project"
+          Value: !Ref Project
+        - 
+          Key: "CreatedBy"
+          Value: !Ref CreatedBy
+
+Outputs:
+  DynamoTableArn:
+    Value: !GetAtt DynamoDBTable.Arn
+    Description: The Arn of the Dynamo DB Table
+    Export:
+      Name:  !Sub "${Project}-${Environment}-app-table-arn"

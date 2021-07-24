@@ -1,0 +1,170 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "CFN S3 Bucket"
+Parameters:
+  
+  Project:
+    Type: String
+    Description: The project name
+  
+  Environment:
+    Type: String
+    Description: Evironment For Project
+
+  CreatedBy:
+    Type: String
+    Description: Team Responsible for creating the resource
+
+  S3BucketName:
+    Type: String
+    Description: Name of the S3 Bucket
+
+  S3BucketAccessControlling:
+    Type: String
+    Default: Private
+    AllowedValues:
+      - Private
+      - PublicRead
+      - PublicReadWrite
+      - AuthenticatedRead
+      - LogDeliveryWrite
+      - BucketOwnerRead
+      - BucketOwnerFullControl
+      - AwsExecRead
+    Description: Input for Canned ACL Value
+
+  S3BucketSSE:
+    Type: String
+    Default: AES256
+    AllowedValues:
+      - AES256
+      - aws:kms
+    Description: Input for Server Side Encryption of Bucket 
+
+  S3BucketVersioning:
+    Type: String
+    Default: Suspended
+    AllowedValues: 
+      - Enabled
+      - Suspended
+    Description: Specify versioning for bucket
+    ConstraintDescription: Must specify Enabled or Suspended
+
+  S3WebHosting:
+    Type: String
+    Default: Suspended
+    AllowedValues:
+      - Enabled
+      - Suspended
+    Description: Decides bucket usage for static web hosting
+
+  S3WebConfigIndexDoc: 
+    Type: String
+    Description: User Specifies index document for static web hosting 
+
+  S3WebConfigErrorDoc: 
+    Type: String
+    Description: User Specifies error document for static web hosting
+
+Conditions:
+  IsEnabledAccessControlling: 
+    !Or
+    - !Equals [!Ref S3BucketAccessControlling, Private]
+    - !Equals [!Ref S3BucketAccessControlling, PublicRead]
+    - !Equals [!Ref S3BucketAccessControlling, PublicReadWrite]
+    - !Equals [!Ref S3BucketAccessControlling, AuthenticatedRead]
+    - !Equals [!Ref S3BucketAccessControlling, LogDeliveryWrite]
+    - !Equals [!Ref S3BucketAccessControlling, BucketOwnerRead]
+    - !Equals [!Ref S3BucketAccessControlling, BucketOwnerFullControl]
+    - !Equals [!Ref S3BucketAccessControlling, AwsExecRead]
+  IsEnabledSSE: !Equals [!Ref S3BucketSSE, AES256]                           
+  IsEnabledVersioning: !Equals [!Ref S3BucketVersioning, Enabled]
+  IsEnabledWebHosting: !Equals [!Ref S3WebHosting, Enabled]
+  IsAvailableWebConfigIndexDoc: !Not [!Equals [!Ref S3WebConfigIndexDoc, '']]
+  IsAvailableWebConfigErrorDoc: !Not [!Equals [!Ref S3WebConfigErrorDoc, '']]
+
+Resources:
+  
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties: 
+      BucketName: !Sub "${Project}-${Environment}-${AWS::AccountId}-${S3BucketName}"
+
+      AccessControl:
+       !If 
+       - IsEnabledAccessControlling
+       - !Ref S3BucketAccessControlling
+       - !Ref AWS::NoValue
+
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm:
+               !If 
+               - IsEnabledSSE 
+               - !Ref S3BucketSSE 
+               - !Ref AWS::NoValue
+
+      VersioningConfiguration:
+        Status:
+          !If 
+          - IsEnabledVersioning
+          - !Ref S3BucketVersioning 
+          - !Ref AWS::NoValue
+
+      WebsiteConfiguration:
+        !If
+        - IsEnabledWebHosting
+        -
+          IndexDocument: !Ref S3WebConfigIndexDoc
+          ErrorDocument: !Ref S3WebConfigErrorDoc
+        - !Ref AWS::NoValue
+
+  S3BucketPolicy:
+    Condition: IsEnabledWebHosting
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      PolicyDocument:
+        Id: S3BucketPolicy
+        Version: 2012-10-17
+        Statement:
+          - Sid: PublicReadForGetBucketObjects
+            Effect: Allow
+            Principal: '*'
+            Action: 
+              - 's3:Get*'
+            Resource: !Join 
+              - ''
+              - - 'arn:aws:s3:::'
+                - !Ref S3Bucket
+                - /*
+      Bucket: !Ref S3Bucket
+
+Outputs:
+  
+  S3BucketName:
+    Value: !Sub "${Project}-${Environment}-${AWS::AccountId}-${S3BucketName}"
+  
+  S3WebsiteURL:
+    Value: 
+      !If  
+      - IsEnabledWebHosting
+      - !GetAtt [S3Bucket, WebsiteURL] 
+      - !Ref AWS::NoValue
+    Description: URL for website hosted on S3
+  
+  S3BucketSecureURL:
+    Value: 
+      !If
+      - IsEnabledWebHosting
+      - !Join ['', ['https://', !GetAtt [S3Bucket, DomainName]]]
+      - !Ref AWS::NoValue
+    Description: Name of S3 bucket to hold website content
+
+  S3BucketRegionalDomainName:
+    Value: 
+      !If
+      - IsEnabledWebHosting
+      - !GetAtt S3Bucket.RegionalDomainName
+      - !Ref AWS::NoValue
+    Description: Name of S3 bucket to hold website content
+      

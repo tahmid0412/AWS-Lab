@@ -1,0 +1,650 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: VPC Stack template that creates VPC, Subnets, InternetGateway, NatGateway and SecurityGroup
+
+Parameters:
+
+  # Project - based Parameters
+  Project:
+    Type: String
+    Description: The project name
+  
+  Environment:
+    Type: String
+    Description: Evironment For VPC
+
+  CreatedBy:
+    Type: String
+    Description: Team Responsible for creating the resource
+    
+  VPCCIDR:
+    Type: String
+    Description: Cidr Range for the VPC
+  
+  ## Subnet 1 Parameters
+  VPCAZ1PublicSubnetCIDR:
+    Type: String
+    Description: CidR For Public Subnet 1
+
+  VPCAZ1PrivateSubnetCIDR:
+    Type: String
+    Description: CidR For Private App Subnet 1
+
+  VPCAZ1RFFSubnetCIDR:
+    Type: String
+    Description: CidR For Private RFF Subnet 1 AZ1
+
+  ## Subnet 2 Parameters
+  VPCAZ2PublicSubnetCIDR:
+    Type: String
+    Description: CidR For Public Subnet 2
+
+  VPCAZ2PrivateSubnetCIDR:
+    Type: String
+    Description: CidR For Private App Subnet 2
+
+  VPCAZ2RFFSubnetCIDR:
+    Type: String
+    Description: CidR For Private RFF Subnet 1 AZ2
+
+  ## Subnet 3 Parameters
+
+  VPCAZ3PublicSubnetCIDR:
+    Type: String
+    Description: CidR For Public Subnet 3
+
+  VPCAZ3PrivateSubnetCIDR:
+    Type: String
+    Description: CidR For Private App Subnet 3
+
+  VPCAZ3RFFSubnetCIDR:
+    Type: String
+    Description: CidR For Private RFF Subnet 1 AZ3
+
+  RFFSubnetsCreation:
+    Type: String
+    Default: "no"
+    Description : Variable to check if RFF Subnets need to be created
+    AllowedValues:
+      - "yes"
+      - "no"
+
+  NatGatewayCreation:
+    Type: String
+    Default: "no"
+    Description : Variable to check if NAT needs to be created
+    AllowedValues:
+      - "yes"
+      - "no"
+
+Conditions: 
+  CreateRFFSubnets: !Equals [ !Ref RFFSubnetsCreation, "yes" ]
+  CreateNATGateway: !Equals [ !Ref NatGatewayCreation, "yes" ]
+
+  
+Resources:
+
+# VPC
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties: 
+      CidrBlock: !Ref VPCCIDR
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: "default"
+      Tags: 
+        - 
+          Key: "Name"
+          Value: !Sub "${Project}-${Environment}-vpc"
+        - 
+          Key: "Environment"
+          Value: !Ref Environment
+        - 
+          Key: "Project"
+          Value: !Ref Project
+        - 
+          Key: "CreatedBy"
+          Value: !Ref CreatedBy
+
+# Subnets for AZ1
+  ## Subnets for AZ1 - Public Subnet
+  VPCAZ1PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties: 
+      AvailabilityZone: 
+        Fn::Select:
+          - 0
+          - Fn::GetAZs:
+              !Ref AWS::Region
+      CidrBlock: !Ref VPCAZ1PublicSubnetCIDR
+      MapPublicIpOnLaunch: true
+      Tags: 
+          - 
+            Key: "Name"
+            Value: !Sub "${Project}-${Environment}-vpc-public-subnet1"
+          - 
+            Key: "Environment"
+            Value: !Ref Environment
+          - 
+            Key: "Project"
+            Value: !Ref Project
+          - 
+            Key: "CreatedBy"
+            Value: !Ref CreatedBy
+      VpcId: !Ref VPC
+  
+  ## Subnets for AZ1 - Private Subnet (Private Subnet 1)
+  VPCAZ1PrivateSubnet:
+    Type: AWS::EC2::Subnet
+    Properties: 
+      AvailabilityZone: 
+        Fn::Select:
+          - 0
+          - Fn::GetAZs:
+              !Ref AWS::Region
+      CidrBlock: !Ref VPCAZ1PrivateSubnetCIDR
+      MapPublicIpOnLaunch: false
+      Tags: 
+          - 
+            Key: "Name"
+            Value: !Sub "${Project}-${Environment}-vpc-private-subnet1"
+          - 
+            Key: "Environment"
+            Value: !Ref Environment
+          - 
+            Key: "Project"
+            Value: !Ref Project
+          - 
+            Key: "CreatedBy"
+            Value: !Ref CreatedBy
+      VpcId: !Ref VPC
+
+  ## Subnets for AZ1 - Reserved for Future Subnet (Private Subnet 2)
+  VPCAZ1RFFSubnet:
+    Type: AWS::EC2::Subnet
+    Condition: CreateRFFSubnets
+    Properties: 
+      AvailabilityZone: 
+        Fn::Select:
+          - 0
+          - Fn::GetAZs:
+              !Ref AWS::Region
+      CidrBlock: !Ref VPCAZ1RFFSubnetCIDR
+      MapPublicIpOnLaunch: false
+      Tags: 
+          - 
+            Key: "Name"
+            Value: !Sub "${Project}-${Environment}-vpc-rff-subnet1"
+          - 
+            Key: "Environment"
+            Value: !Ref Environment
+          - 
+            Key: "Project"
+            Value: !Ref Project
+          - 
+            Key: "CreatedBy"
+            Value: !Ref CreatedBy
+      VpcId: !Ref VPC
+
+# Subnets for AZ2
+  ## Subnets for AZ2 - Public Subnet
+  VPCAZ2PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties: 
+      AvailabilityZone: 
+        Fn::Select:
+          - 1
+          - Fn::GetAZs:
+              !Ref AWS::Region
+      CidrBlock: !Ref VPCAZ2PublicSubnetCIDR
+      MapPublicIpOnLaunch: true
+      Tags: 
+          - 
+            Key: "Name"
+            Value: !Sub "${Project}-${Environment}-vpc-public-subnet2"
+          - 
+            Key: "Environment"
+            Value: !Ref Environment
+          - 
+            Key: "Project"
+            Value: !Ref Project
+          - 
+            Key: "CreatedBy"
+            Value: !Ref CreatedBy
+      VpcId: !Ref VPC
+  
+  ## Subnets for AZ2 - Application Subnet (Private Subnet 1)
+  VPCAZ2PrivateSubnet:
+    Type: AWS::EC2::Subnet
+    Properties: 
+      AvailabilityZone:
+        Fn::Select:
+          - 1
+          - Fn::GetAZs:
+              !Ref AWS::Region
+      CidrBlock: !Ref VPCAZ2PrivateSubnetCIDR
+      MapPublicIpOnLaunch: false
+      Tags: 
+          - 
+            Key: "Name"
+            Value: !Sub "${Project}-${Environment}-vpc-private-subnet2"
+          - 
+            Key: "Environment"
+            Value: !Ref Environment
+          - 
+            Key: "Project"
+            Value: !Ref Project
+          - 
+            Key: "CreatedBy"
+            Value: !Ref CreatedBy
+      VpcId: !Ref VPC
+
+  ## Subnets for AZ2 - Reserved for Future Subnet (Private Subnet 2)
+  VPCAZ2RFFSubnet:
+    Type: AWS::EC2::Subnet
+    Condition:  CreateRFFSubnets
+    Properties: 
+      AvailabilityZone:
+        Fn::Select:
+          - 1
+          - Fn::GetAZs:
+              !Ref AWS::Region
+      CidrBlock: !Ref VPCAZ2RFFSubnetCIDR
+      MapPublicIpOnLaunch: false
+      Tags: 
+          - 
+            Key: "Name"
+            Value: !Sub "${Project}-${Environment}-vpc-rff-subnet3"
+          - 
+            Key: "Environment"
+            Value: !Ref Environment
+          - 
+            Key: "Project"
+            Value: !Ref Project
+          - 
+            Key: "CreatedBy"
+            Value: !Ref CreatedBy
+      VpcId: !Ref VPC
+  
+# Subnets for AZ3
+  ## Subnets for AZ3 - Public Subnet
+  VPCAZ3PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties: 
+      AvailabilityZone:
+        Fn::Select:
+          - 2
+          - Fn::GetAZs:
+              !Ref AWS::Region
+      CidrBlock: !Ref VPCAZ3PublicSubnetCIDR
+      MapPublicIpOnLaunch: true
+      Tags: 
+          - 
+            Key: "Name"
+            Value: !Sub "${Project}-${Environment}-vpc-public-subnet3"
+          - 
+            Key: "Environment"
+            Value: !Ref Environment
+          - 
+            Key: "Project"
+            Value: !Ref Project
+          - 
+            Key: "CreatedBy"
+            Value: !Ref CreatedBy
+      VpcId: !Ref VPC
+  
+  ## Subnets for AZ3 - Application Subnet (Private Subnet 1)
+  VPCAZ3PrivateSubnet:
+    Type: AWS::EC2::Subnet
+    Properties: 
+      AvailabilityZone:
+        Fn::Select:
+          - 2
+          - Fn::GetAZs:
+              !Ref AWS::Region
+      CidrBlock: !Ref VPCAZ3PrivateSubnetCIDR
+      MapPublicIpOnLaunch: false
+      Tags: 
+          - 
+            Key: "Name"
+            Value: !Sub "${Project}-${Environment}-vpc-private-subnet3"
+          - 
+            Key: "Environment"
+            Value: !Ref Environment
+          - 
+            Key: "Project"
+            Value: !Ref Project
+          - 
+            Key: "CreatedBy"
+            Value: !Ref CreatedBy
+      VpcId: !Ref VPC
+
+  ## Subnets for AZ3 - Reserved for Future Subnet (Private Subnet 2)
+  VPCAZ3RFFSubnet:
+    Type: AWS::EC2::Subnet
+    Condition: CreateRFFSubnets
+    Properties: 
+      AvailabilityZone:
+        Fn::Select:
+          - 2
+          - Fn::GetAZs:
+              !Ref AWS::Region
+      CidrBlock: !Ref VPCAZ3RFFSubnetCIDR
+      MapPublicIpOnLaunch: false
+      Tags: 
+          - 
+            Key: "Name"
+            Value: !Sub "${Project}-${Environment}-vpc-rff-subnet5"
+          - 
+            Key: "Environment"
+            Value: !Ref Environment
+          - 
+            Key: "Project"
+            Value: !Ref Project
+          - 
+            Key: "CreatedBy"
+            Value: !Ref CreatedBy
+      VpcId: !Ref VPC
+
+# Internet GateWay for internet communication of public resources
+  VPCIGW:
+    Type: AWS::EC2::InternetGateway
+    Properties: 
+      Tags: 
+        - 
+          Key: "Name"
+          Value: !Sub "${Project}-${Environment}-vpc-internet-gateway"
+        - 
+          Key: "Environment"
+          Value: !Ref Environment
+        - 
+          Key: "Project"
+          Value: !Ref Project
+        - 
+          Key: "CreatedBy"
+          Value: !Ref CreatedBy
+
+# Elastic IP Needed to Provision MAT Gateway
+  VPCEIP:
+    Type: AWS::EC2::EIP
+    Condition: CreateNATGateway
+    Properties: 
+      Domain: vpc
+      Tags: 
+        - 
+          Key: "Name"
+          Value: !Sub "${Project}-${Environment}-vpc-eip"
+        - 
+          Key: "Environment"
+          Value: !Ref Environment
+        - 
+          Key: "Project"
+          Value: !Ref Project
+        - 
+          Key: "CreatedBy"
+          Value: !Ref CreatedBy
+
+# NAT GateWay for internet communication of Private resources
+  VPCNGW:
+    Type: AWS::EC2::NatGateway
+    Condition: CreateNATGateway
+    Properties: 
+      AllocationId: !GetAtt VPCEIP.AllocationId
+      SubnetId: !Ref VPCAZ1PublicSubnet
+      Tags: 
+        - 
+          Key: "Name"
+          Value: !Sub "${Project}-${Environment}-vpc-nat-gateway"
+        - 
+          Key: "Environment"
+          Value: !Ref Environment
+        - 
+          Key: "Project"
+          Value: !Ref Project
+        - 
+          Key: "CreatedBy"
+          Value: !Ref CreatedBy
+
+# VPC InternetGAteway Attachment
+  VPCIGWAttachment:
+      Type: AWS::EC2::VPCGatewayAttachment
+      Properties: 
+        InternetGatewayId: !Ref VPCIGW
+        VpcId: !Ref VPC
+
+# VPC Public Route Table for Public Resources
+  VPCPublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - 
+          Key: "Name"
+          Value: !Sub "${Project}-${Environment}-vpc-public-route-table"
+        - 
+          Key: "Environment"
+          Value: !Ref Environment
+        - 
+          Key: "Project"
+          Value: !Ref Project
+        - 
+          Key: "CreatedBy"
+          Value: !Ref CreatedBy
+
+  VPCPublicRoute1:
+    Type: AWS::EC2::Route
+    Properties: 
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref VPCIGW
+      RouteTableId: !Ref VPCPublicRouteTable
+
+# VPC Private Route Table for Private Resources of AZ1
+  VPCAZ1PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Condition: CreateNATGateway
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+      - 
+        Key: "Name"
+        Value: !Sub "${Project}-${Environment}-vpc-private-route-table1"
+      - 
+        Key: "Environment"
+        Value: !Ref Environment
+      - 
+        Key: "Project"
+        Value: !Ref Project
+      - 
+        Key: "CreatedBy"
+        Value: !Ref CreatedBy
+
+  VPCAZ1PrivateRoute:
+    Type: AWS::EC2::Route
+    Condition: CreateNATGateway
+    Properties: 
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref VPCNGW
+      RouteTableId: !Ref VPCAZ1PrivateRouteTable
+
+# VPC Private Route Table for Private Resources of AZ2
+  VPCAZ2PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Condition: CreateNATGateway
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+      - 
+        Key: "Name"
+        Value: !Sub "${Project}-${Environment}-vpc-private-route-table2"
+      - 
+        Key: "Environment"
+        Value: !Ref Environment
+      - 
+        Key: "Project"
+        Value: !Ref Project
+      - 
+        Key: "CreatedBy"
+        Value: !Ref CreatedBy
+  
+  VPCAZ2PrivateRoute:
+    Type: AWS::EC2::Route
+    Condition: CreateNATGateway
+    Properties: 
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref VPCNGW
+      RouteTableId: !Ref VPCAZ2PrivateRouteTable
+
+# VPC Private Route Table for Private Resources of AZ3
+  VPCAZ3PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Condition: CreateNATGateway
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+      - 
+        Key: "Name"
+        Value: !Sub "${Project}-${Environment}-vpc-private-route-table3"
+      - 
+        Key: "Environment"
+        Value: !Ref Environment
+      - 
+        Key: "Project"
+        Value: !Ref Project
+      - 
+        Key: "CreatedBy"
+        Value: !Ref CreatedBy
+  
+  VPCAZ3PrivateRoute:
+    Type: AWS::EC2::Route
+    Condition: CreateNATGateway
+    Properties: 
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref VPCNGW
+      RouteTableId: !Ref VPCAZ3PrivateRouteTable
+  
+ ##AZ 1 - Route Table Associationations
+  VPCAZ1PublicSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref VPCAZ1PublicSubnet
+      RouteTableId: !Ref VPCPublicRouteTable
+  
+  VPCAZ1PrivateSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Condition: CreateNATGateway
+    Properties:
+      SubnetId: !Ref VPCAZ1PrivateSubnet
+      RouteTableId: !Ref VPCAZ1PrivateRouteTable
+  
+  VPCAZ1RFFSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Condition: CreateRFFSubnets
+    Properties:
+      SubnetId: !Ref VPCAZ1RFFSubnet
+      RouteTableId: !Ref VPCAZ1PrivateRouteTable
+
+##AZ 2 - Route Table Associationations
+  VPCAZ2PublicSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref VPCAZ2PublicSubnet
+      RouteTableId: !Ref VPCPublicRouteTable
+
+  VPCAZ2PrivateSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Condition: CreateNATGateway
+    Properties:
+      SubnetId: !Ref VPCAZ2PrivateSubnet
+      RouteTableId: !Ref VPCAZ2PrivateRouteTable
+  
+  VPCAZ2RFFSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Condition: CreateRFFSubnets
+    Properties:
+      SubnetId: !Ref VPCAZ2RFFSubnet
+      RouteTableId: !Ref VPCAZ2PrivateRouteTable
+
+##AZ 3 - Route Table Associationations
+  VPCAZ3PublicSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref VPCAZ3PublicSubnet
+      RouteTableId: !Ref VPCPublicRouteTable
+  
+  VPCAZ3PrivateSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Condition: CreateNATGateway
+    Properties:
+      SubnetId: !Ref VPCAZ3PrivateSubnet
+      RouteTableId: !Ref VPCAZ3PrivateRouteTable
+  
+  VPCAZ3RFFSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Condition: CreateRFFSubnets
+    Properties:
+      SubnetId: !Ref VPCAZ3RFFSubnet
+      RouteTableId: !Ref VPCAZ3PrivateRouteTable
+
+Outputs:
+  
+  VPCId:
+    Value: !Ref VPC
+    Description: The Id of the VPC Created
+    Export:
+      Name: !Sub "${Project}-${Environment}-VPCId"
+  
+  VPCAZ1PublicSubnetId:
+    Value: !Ref VPCAZ1PublicSubnet
+    Description: The Subnet Id for Public Subnet1
+    Export:
+      Name: !Sub "${Project}-${Environment}-AZ1PublicSubnetId" 
+
+  VPCAZ2PublicSubnetId:
+    Value: !Ref VPCAZ2PublicSubnet
+    Description: The Subnet Id for Public Subnet2
+    Export:
+      Name:  !Sub "${Project}-${Environment}-AZ2PublicSubnetId" 
+  
+  VPCAZ3PublicSubnetId:
+    Value: !Ref VPCAZ3PublicSubnet
+    Description: The Subnet Id for Public Subnet3
+    Export:
+      Name:  !Sub "${Project}-${Environment}-AZ3PublicSubnetId"
+
+  VPCAZ1PrivateSubnetId:
+    Value: !Ref VPCAZ1PrivateSubnet
+    Description: The Subnet Id for Private Private Subnet1
+    Export:
+      Name:  !Sub "${Project}-${Environment}-AZ1PrivateSubnetId" 
+
+  VPCAZ2PrivateSubnetId:
+    Value: !Ref VPCAZ2PrivateSubnet
+    Description: The Subnet Id for Private Private Subnet2
+    Export:
+      Name:  !Sub "${Project}-${Environment}-AZ2PrivateSubnetId" 
+  
+  VPCAZ3PrivateSubnetId:
+    Value: !Ref VPCAZ3PrivateSubnet
+    Description: The Subnet Id for Private Private Subnet3
+    Export:
+      Name:  !Sub "${Project}-${Environment}-AZ3PrivateSubnetId" 
+
+  VPCAZ1RFFSubnetId:
+    Condition: CreateRFFSubnets
+    Value: !Ref VPCAZ1RFFSubnet
+    Description: The Subnet Id for Private RFF Subnet
+    Export:
+      Name:  !Sub "${Project}-${Environment}-AZ1RFFSubnetId" 
+  
+  VPCAZ2RFFSubnetId:
+    Condition: CreateRFFSubnets
+    Value: !Ref VPCAZ2RFFSubnet
+    Description: The Subnet Id for Private RFF Subnet
+    Export:
+      Name:  !Sub "${Project}-${Environment}-AZ2RFFSubnetId" 
+  
+  VPCAZ3RFFSubnetId:
+    Condition: CreateRFFSubnets
+    Value: !Ref VPCAZ3RFFSubnet
+    Description: The Subnet Id for Private RFF Subnet
+    Export:
+      Name:  !Sub "${Project}-${Environment}-AZ3RFFSubnetId" 

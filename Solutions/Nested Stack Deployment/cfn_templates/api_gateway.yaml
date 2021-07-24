@@ -1,0 +1,90 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation template for API Gateway
+
+Parameters:
+   # Project - based Parameters
+  Project:
+    Type: String
+    Description: The project name
+  
+  Environment:
+    Type: String
+    Description: Evironment For Infrastructure
+
+  CreatedBy:
+    Type: String
+    Description: Team Responsible for creating the resource
+    
+  ApiGatewayStageName:
+    Type: String
+    Default: call
+  ApiGatewayHTTPMethod:
+    Type: String
+    Default: POST
+
+  LambdaFunctionArn:
+    Type: String
+    Description: Arn of the AWS Lambda Function
+
+
+Resources:
+  ## API Gateway - REST API
+  ApiGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Description: !Sub "API Gateway for ${Project}, ${Environment} Environment"
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      Name: !Sub "${Project}-${Environment}-api-gateway"
+      Tags:
+      - 
+        Key: "Name"
+        Value: !Sub "${Project}-${Environment}-api-gateway"
+      - 
+        Key: "Environment"
+        Value: !Ref Environment
+      - 
+        Key: "Project"
+        Value: !Ref Project
+      - 
+        Key: "CreatedBy"
+        Value: !Ref CreatedBy
+
+  ## API Gateway - Root Method
+  ApiGatewayRootMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: !Ref ApiGatewayHTTPMethod
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub
+          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${lambdaArn}/invocations
+          - lambdaArn: !Ref LambdaFunctionArn
+      ResourceId: !GetAtt ApiGateway.RootResourceId
+      RestApiId: !Ref ApiGateway
+
+  ## API Gateway - Deployment
+  ApiGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - ApiGatewayRootMethod
+    Properties:
+      RestApiId: !Ref ApiGateway
+      StageName: !Ref ApiGatewayStageName
+
+  ## API Gateway - Lambda Trigger
+  LambdaApiGatewayInvoke:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref LambdaFunctionArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/${ApiGatewayStageName}/${ApiGatewayHTTPMethod}/
+
+
+Outputs:
+  ApiGatewayInvokeURL:
+    Value: !Sub https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiGatewayStageName}
