@@ -1,0 +1,67 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Security Groups Template
+
+Parameters:
+   # Project - based Parameters
+  Project:
+    Type: String
+    Description: The project name
+  
+  Environment:
+    Type: String
+    Description: Evironment For Infrastructure
+
+  CreatedBy:
+    Type: String
+    Description: Team Responsible for creating the resource
+
+  VpcId:
+    Type: String
+    Description: Id of the VPC
+
+Resources:
+
+  LambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub "${Project}-${Environment}-LambdaSG"
+      GroupDescription: Security to be associated with Lambda resources
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 443
+        ToPort: 443
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 8000
+        ToPort: 8000
+        CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+      - IpProtocol: -1
+        FromPort: -1
+        ToPort: -1
+        CidrIp: 0.0.0.0/0
+      Tags: 
+      - 
+        Key: "Name"
+        Value: !Sub "${Project}-${Environment}-LambdaSG"
+      - 
+        Key: "Project"
+        Value: !Ref Project
+      - 
+        Key: "Environment"
+        Value: !Ref Environment
+      - 
+        Key: "CreatedBy"
+        Value: !Ref CreatedBy
+
+Outputs:
+  LambdaSGId:
+    Value: !GetAtt LambdaSecurityGroup.GroupId
+    Description: SG Id for Lambda Security Group
+    Export:
+      Name:  !Sub "${Project}-${Environment}-LambdaSG"  

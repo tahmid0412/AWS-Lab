@@ -1,0 +1,112 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Lambda Function Template
+
+Parameters:
+   # Project - based Parameters
+  Project:
+    Type: String
+    Description: The project name
+  
+  Environment:
+    Type: String
+    Description: Evironment For Infrastructure
+
+  CreatedBy:
+    Type: String
+    Description: Team Responsible for creating the resource
+
+  LambdaFunctionHandler:
+    Type: String
+    Default: index.handler
+    Description: The name of the method within your code that Lambda calls to execute your function. The format includes the file name. e.g. index.handler
+
+  LambdaFunctionMemory:
+    Type: String
+    Default: 128
+    Description: The amount of memory in MBs available to the function at runtime
+
+  LambdaFunctionRuntime:
+    Type: String
+    Default: python3.8
+    Description: The identifier of the function's runtime. 
+    AllowedValues: [ nodejs10.x, nodejs 14.x, python2.7, python3.6, python3.7, python3.8 ]
+
+  LambdaFunctionLogsRetention:
+    Type: Number
+    Description: Number of days for the Lambda logs to be retained in AWS Cloudwatch
+
+  LambdaFunctionS3Bucket:
+    Type: String
+    Description: Name of S3 Bucket containing lambda code zip file
+
+  LambdaFunctionS3Key:
+    Type: String
+    Description: Path/Key of lambda code zip file in S3 Bucket
+
+  LambdaSecurityGroupIds:
+    Type: String
+    Description: Comma separated list of VPC security groups IDs.
+  
+  LambdaSubnetIds:
+    Type: String
+    Description: Comma separated list of VPC subnet IDs.
+  
+  LambdaIAMRoleArn:
+    Type: String
+    Description: Arn of the IAM Role to be associated with Lambda function
+
+  LambdaTimeout:
+    Type: Number
+    Description: The amount of time that Lambda allows a function to run before stopping it
+  
+  DynamoTableName:
+    Type: String
+    Description: Name of the DynamoDB Table
+  
+Resources:
+  ## Lmabda Function
+  LambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref LambdaFunctionS3Bucket
+        S3Key: !Ref LambdaFunctionS3Key
+      Description: !Sub "Lambda Function for ${Project}, ${Environment} Environment"
+      FunctionName: !Sub "${Project}-${Environment}-lambda-function"
+      Handler: !Ref LambdaFunctionHandler
+      MemorySize: !Ref LambdaFunctionMemory
+      Role: !Ref LambdaIAMRoleArn
+      Runtime: !Ref LambdaFunctionRuntime
+      Timeout: !Ref LambdaTimeout
+      VpcConfig:
+        SecurityGroupIds: !Split [ ',',  !Ref LambdaSecurityGroupIds ]
+        SubnetIds: !Split [ ',',  !Ref LambdaSubnetIds ]
+      Environment:
+        Variables:
+          DYNAMO_TABLE: !Sub "${Project}-${Environment}-${DynamoTableName}"
+      Tags:
+        - 
+          Key: "Name"
+          Value: !Sub "${Project}-${Environment}-lambda-function"
+        - 
+          Key: "Environment"
+          Value: !Ref Environment
+        - 
+          Key: "Project"
+          Value: !Ref Project
+        - 
+          Key: "CreatedBy"
+          Value: !Ref CreatedBy
+  
+  LambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${Project}-${Environment}-lambda-function
+      RetentionInDays: 7
+
+Outputs:
+  LambdaArn:
+    Value: !GetAtt LambdaFunction.Arn
+    Description: The Arn of the Dynamo DB Table
+    Export:
+      Name:  !Sub "${Project}-${Environment}-lambda-arn"

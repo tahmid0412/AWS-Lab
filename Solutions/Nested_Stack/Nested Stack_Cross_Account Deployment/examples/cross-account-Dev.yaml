@@ -1,0 +1,86 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Creates an S3 bucket in eu-north-1 and ap-northeast-1 in a remote account
+Parameters:
+  CentralRoleArn:
+    Type: String
+    Description: The IAM role name for the role that is trusted by the destination role.
+    Default: 'arn:aws:iam::309967048489:role/CentralControlRole'
+  DevRoleArn: 
+    Type: String
+    Description: The IAM role to be assumed and used to create a CloudFormation stack containing an S3 bucket.
+    Default: 'arn:aws:iam::828852556902:role/DevAccessRole'
+Resources:
+  DevStack:
+    Type: Custom::CfnStackMaker
+    Version: 1.0
+    Properties:
+      ServiceToken: !GetAtt CfnAssumeRoleLambda.Arn
+      RoleArn: !Ref DevRoleArn
+      TemplateURL: https://duobank-testbucket1.s3.ca-central-1.amazonaws.com/main.yaml
+      ParentStackId: !Ref AWS::StackId
+      Region: ca-central-1
+      CfnParameters:
+        Environment: dev
+        Project: duobank
+        CreatedBy: NorthbayDev
+        CfnTemplateS3BucketName: duobank-testbucket1
+        CfnTemplateS3BucketKey: Dev_CFN
+        VPCCIDR: 10.10.0.0/19
+        VPCAZ1PublicSubnetCIDR: 10.10.0.0/23
+        VPCAZ1PrivateSubnetCIDR: 10.10.2.0/23
+        VPCAZ1RFFSubnetCIDR: 10.10.4.0/23
+        VPCAZ2PublicSubnetCIDR: 10.10.6.0/23
+        VPCAZ2PrivateSubnetCIDR: 10.10.8.0/23
+        VPCAZ2RFFSubnetCIDR: 10.10.10.0/23
+        VPCAZ3PublicSubnetCIDR: 10.10.12.0/23
+        VPCAZ3PrivateSubnetCIDR: 10.10.14.0/23
+        VPCAZ3RFFSubnetCIDR: 10.10.16.0/23
+        RFFSubnetsCreation: no
+        NatGatewayCreation: yes
+        LambdaFunctionHandler: index.handler
+        LambdaFunctionMemory: 128
+        LambdaFunctionRuntime: nodejs14.x
+        LambdaFunctionLogsRetention: 7
+        LambdaFunctionS3Bucket: duobank-testbucket1
+        LambdaFunctionS3Key: lambda_source/lambda-function.zip
+        LambdaTimeout: 20
+        ApiGatewayStageName: test
+        ApiGatewayHTTPMethod: GET
+        KMSKeyRotation: False
+        KMSMultiRegion: False
+        KMSPendingWindow: 7
+        DynamoPartitionKeyName: id
+        DynamoSortKeyName: ip
+        DynamoReadCapacityUnits: 5
+        DynamoWriteCapacityUnits: 5
+        DynamoTableName: data
+        S3BucketName: data
+        S3WebConfigErrorDoc: error.html
+        S3BucketAccessControlling: Private
+        S3BucketSSE: AES256
+        S3BucketVersioning: Enabled
+        S3WebHosting: Enabled
+        S3WebConfigIndexDoc: index.html
+        S3WebConfigErrorDoc: error.html
+        SSLCertificateArn: ""
+        CloudFrontPriceClass: PriceClass_100
+        StaticWebsiteDomain: test.abc.com
+        CloudFrontRootObject: index.html
+        CloudFrontHttpVersion: http1.1
+        CloudFrontAllowedMethods: "DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT"
+        CloudFrontCachedMethods: "HEAD,GET"
+  CfnAssumeRoleLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: lambda_function.lambda_handler
+      MemorySize: 128
+      Role: !Ref CentralRoleArn
+      Runtime: python3.6
+      Timeout: 900
+      Code:
+        S3Bucket: 'duobank-testbucket1'
+        S3Key: 'cross-account-helper/lambda.zip'
+Outputs:
+  DestinationAccountId:
+    Value: !GetAtt DevStack.AccountId
+  

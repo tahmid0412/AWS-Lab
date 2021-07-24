@@ -1,0 +1,198 @@
+[
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "dev"
+  }, 
+  {
+    "ParameterKey": "Project",
+    "ParameterValue": "duobank"
+  }, 
+  {
+    "ParameterKey": "CreatedBy",
+    "ParameterValue": "NorthbayDev"
+  },
+  {
+    "ParameterKey": "CfnTemplateS3BucketName",
+    "ParameterValue": "duobank-dev-infra-bucket-17f505d6-5f9a-4c24-8434-a31d9a10f61d"
+  },
+  {
+    "ParameterKey": "CfnTemplateS3BucketKey",
+    "ParameterValue": "cfn_templates"
+  },
+  {
+    "ParameterKey": "VPCCIDR",
+    "ParameterValue": "10.10.0.0/19"
+  },  
+  {
+    "ParameterKey": "VPCAZ1PublicSubnetCIDR",
+    "ParameterValue": "10.10.0.0/23"
+  }, 
+  {
+    "ParameterKey": "VPCAZ1PrivateSubnetCIDR",
+    "ParameterValue": "10.10.2.0/23"
+  }, 
+  {
+    "ParameterKey": "VPCAZ1RFFSubnetCIDR",
+    "ParameterValue": "10.10.4.0/23"
+  }, 
+  {
+    "ParameterKey": "VPCAZ2PublicSubnetCIDR",
+    "ParameterValue": "10.10.6.0/23"
+  }, 
+  {
+    "ParameterKey": "VPCAZ2PrivateSubnetCIDR",
+    "ParameterValue": "10.10.8.0/23"
+  }, 
+  {
+    "ParameterKey": "VPCAZ2RFFSubnetCIDR",
+    "ParameterValue": "10.10.10.0/23"
+  }, 
+  {
+    "ParameterKey": "VPCAZ3PublicSubnetCIDR",
+    "ParameterValue": "10.10.12.0/23"
+  }, 
+  {
+    "ParameterKey": "VPCAZ3PrivateSubnetCIDR",
+    "ParameterValue": "10.10.14.0/23"
+  }, 
+  {
+    "ParameterKey": "VPCAZ3RFFSubnetCIDR",
+    "ParameterValue": "10.10.16.0/23"
+  }, 
+  {
+    "ParameterKey": "RFFSubnetsCreation",
+    "ParameterValue": "no"
+  },
+  {
+    "ParameterKey": "NatGatewayCreation",
+    "ParameterValue": "yes"
+  },
+  {
+    "ParameterKey": "LambdaFunctionHandler",
+    "ParameterValue": "index.handler"
+  }, 
+  {
+    "ParameterKey": "LambdaFunctionMemory",
+    "ParameterValue": "128"
+  }, 
+  {
+    "ParameterKey": "LambdaFunctionRuntime",
+    "ParameterValue": "python3.8"
+  },
+  {
+    "ParameterKey": "LambdaFunctionLogsRetention",
+    "ParameterValue": "7"
+  }, 
+  {
+    "ParameterKey": "LambdaFunctionS3Bucket",
+    "ParameterValue": "duobank-dev-infra-bucket-17f505d6-5f9a-4c24-8434-a31d9a10f61d"
+  }, 
+  {
+    "ParameterKey": "LambdaFunctionS3Key",
+    "ParameterValue": "lambda_source/lambda-function.zip"
+  },
+  {
+    "ParameterKey": "LambdaTimeout",
+    "ParameterValue": "20"
+  },
+  {
+    "ParameterKey": "ApiGatewayStageName",
+    "ParameterValue": "test"
+  }, 
+  {
+    "ParameterKey": "ApiGatewayHTTPMethod",
+    "ParameterValue": "GET"
+  },
+  {
+    "ParameterKey": "KMSKeyRotation",
+    "ParameterValue": "False"
+  }, 
+  {
+    "ParameterKey": "KMSMultiRegion",
+    "ParameterValue": "False"
+  },
+  {
+    "ParameterKey": "KMSPendingWindow",
+    "ParameterValue": "7"
+  }, 
+  {
+    "ParameterKey": "DynamoPartitionKeyName",
+    "ParameterValue": "id"
+  },
+  {
+    "ParameterKey": "DynamoSortKeyName",
+    "ParameterValue": "ip"
+  }, 
+  {
+    "ParameterKey": "DynamoReadCapacityUnits",
+    "ParameterValue": "5"
+  },
+  {
+    "ParameterKey": "DynamoWriteCapacityUnits",
+    "ParameterValue": "5"
+  },
+  {
+    "ParameterKey": "DynamoTableName",
+    "ParameterValue": "data1"
+  },
+  {
+    "ParameterKey": "S3BucketName",
+    "ParameterValue": "data1"
+  },
+  {
+    "ParameterKey": "S3WebConfigErrorDoc",
+    "ParameterValue": "error.html"
+  },
+  {
+    "ParameterKey": "S3BucketAccessControlling",
+    "ParameterValue": "Private"
+  },
+  {
+    "ParameterKey": "S3BucketSSE",
+    "ParameterValue": "AES256"
+  }, 
+  {
+    "ParameterKey": "S3BucketVersioning",
+    "ParameterValue": "Enabled"
+  },
+  {
+    "ParameterKey": "S3WebHosting",
+    "ParameterValue": "Enabled"
+  }, 
+  {
+    "ParameterKey": "S3WebConfigIndexDoc",
+    "ParameterValue": "index.html"
+  }, 
+  {
+    "ParameterKey": "S3WebConfigErrorDoc",
+    "ParameterValue": "error.html"
+  },
+  {
+    "ParameterKey": "SSLCertificateArn",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "CloudFrontPriceClass",
+    "ParameterValue": "PriceClass_100"
+  },
+  {
+    "ParameterKey": "StaticWebsiteDomain",
+    "ParameterValue": "test.abc.com"
+  },
+  {
+    "ParameterKey": "CloudFrontRootObject",
+    "ParameterValue": "index.html"
+  },
+  {
+    "ParameterKey": "CloudFrontHttpVersion",
+    "ParameterValue": "http1.1"
+  },
+  {
+    "ParameterKey": "CloudFrontAllowedMethods",
+    "ParameterValue": "DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT"
+  },
+  {
+    "ParameterKey": "CloudFrontCachedMethods",
+    "ParameterValue": "HEAD,GET"
+  }
+]

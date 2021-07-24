@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  CentralAccountId:
+    Type: String
+    Default: '309967048489'
+  CentralAccountRoleName:
+    Type: String
+    Default: CentralControlRole
+  DevAccountRoleName:
+    Type: String
+    Default: DevAccessRole
+Resources:
+  DevAccountRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref DevAccountRoleName
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            AWS: !Sub 'arn:aws:iam::${CentralAccountId}:role/${CentralAccountRoleName}'
+          Action: sts:AssumeRole
+      Path: /
+      Policies:
+      - PolicyName: CfnStackAssumeRole
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action: 
+            - 'cloudformation:CreateStack'
+            - 'cloudformation:UpdateStack'
+            - 'cloudformation:DeleteStack'
+            - 'cloudformation:DescribeStacks'
+            Resource: "*"
+          - Effect: Allow
+            Action: "*"
+            Resource: "*"
+Outputs:
+  DevAccountRoleArn:
+    Value: !GetAtt DevAccountRole.Arn

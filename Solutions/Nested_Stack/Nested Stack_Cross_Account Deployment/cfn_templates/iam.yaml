@@ -1,0 +1,128 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: IAM Role & Policies Template
+
+Parameters:
+   # Project - based Parameters
+  Project:
+    Type: String
+    Description: The project name
+  
+  Environment:
+    Type: String
+    Description: Evironment For Infrastructure
+
+  CreatedBy:
+    Type: String
+    Description: Team Responsible for creating the resource
+
+  
+Resources:
+  
+  # IAM Role for Lambda Function
+  LambdaIAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${Project}-${Environment}-lambda-iam-role"
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      Policies:
+        - PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Effect: Allow
+                Resource: "*"
+          PolicyName: !Sub "${Project}-${Environment}-lambda-logs-policy"
+
+        - PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                  - ec2:DescribeInstances
+                  - ec2:AttachNetworkInterface
+                Effect: Allow
+                Resource: "*"
+          PolicyName: !Sub "${Project}-${Environment}-lambda-vpc-policy"
+
+        - PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                  - dynamodb:ListTables
+                  - dynamodb:DeleteItem
+                  - dynamodb:DescribeContributorInsights
+                  - dynamodb:ListTagsOfResource
+                  - dynamodb:CreateBackup
+                  - dynamodb:DeleteTable
+                  - dynamodb:DescribeReservedCapacityOfferings
+                  - dynamodb:PartiQLSelect
+                  - dynamodb:DescribeTable
+                  - dynamodb:PartiQLInsert
+                  - dynamodb:GetItem
+                  - dynamodb:DescribeContinuousBackups
+                  - dynamodb:DescribeExport
+                  - dynamodb:CreateGlobalTable
+                  - dynamodb:DescribeKinesisStreamingDestination
+                  - dynamodb:ListExports
+                  - dynamodb:DescribeLimits
+                  - dynamodb:BatchGetItem
+                  - dynamodb:BatchWriteItem
+                  - dynamodb:ConditionCheckItem
+                  - dynamodb:PutItem
+                  - dynamodb:ListBackups
+                  - dynamodb:PartiQLUpdate
+                  - dynamodb:Scan
+                  - dynamodb:Query
+                  - dynamodb:DescribeStream
+                  - dynamodb:UpdateItem
+                  - dynamodb:DescribeTimeToLive
+                  - dynamodb:ListStreams
+                  - dynamodb:CreateTable
+                  - dynamodb:ListContributorInsights
+                  - dynamodb:DescribeGlobalTableSettings
+                  - dynamodb:ListGlobalTables
+                  - dynamodb:GetShardIterator
+                  - dynamodb:DescribeGlobalTable
+                  - dynamodb:DescribeReservedCapacity
+                  - dynamodb:RestoreTableFromBackup
+                  - dynamodb:DescribeBackup
+                  - dynamodb:UpdateTable
+                  - dynamodb:GetRecords
+                  - dynamodb:PartiQLDelete
+                  - dynamodb:DescribeTableReplicaAutoScaling
+                Effect: Allow
+                Resource: "*"
+          PolicyName: !Sub "${Project}-${Environment}-lambda-dynamo-policy"
+      Tags: 
+        - 
+          Key: "Name"
+          Value: !Sub "${Project}-${Environment}-lambda-iam-role"
+        - 
+          Key: "Environment"
+          Value: !Ref Environment
+        - 
+          Key: "Project"
+          Value: !Ref Project
+        - 
+          Key: "CreatedBy"
+          Value: !Ref CreatedBy
+
+Outputs:
+  LambdaIAMRoleArn:
+    Value: !GetAtt LambdaIAMRole.Arn
+    Description: The Arn of the Dynamo DB Table
+    Export:
+      Name:  !Sub "${Project}-${Environment}-lambda-role-arn"

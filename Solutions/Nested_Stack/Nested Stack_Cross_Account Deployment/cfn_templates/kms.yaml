@@ -1,0 +1,85 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: KMS Key
+Parameters:
+  Project:
+    Type: String
+    Description: The project name
+  
+  Environment:
+    Type: String
+    Description: Evironment For Project
+
+  CreatedBy:
+    Type: String
+    Description: Team Responsible for creating the resource
+
+  KMSKeyRotation:
+    Type: String
+    Default: False
+    Description: Boolean value to enable or disable key rotation
+
+  KMSMultiRegion:
+    Type: String
+    Default: False
+    Description: Boolean value to enable or disable multi region
+
+  KMSPendingWindow:
+    Type: String
+    Description: Number of days for the KMS Key to stay in pending state before deletetion
+  
+  LambdaRoleArn:
+    Type: String
+    Description: Arn of the Lambda Role
+
+Resources:
+  ## KMS Key for Dynamo DB Table
+  KMSKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: KMS Key to be used for Dynamo DB
+      MultiRegion: !Ref KMSMultiRegion
+      EnableKeyRotation: !Ref KMSKeyRotation
+      PendingWindowInDays: !Ref KMSPendingWindow
+      KeyPolicy:
+        Version: '2012-10-17'
+        Id: key-default-1
+        Statement:
+        - Sid: Enable IAM User Permissions
+          Effect: Allow
+          Principal:
+            AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+          Action: kms:*
+          Resource: '*'
+        - Sid: Allow use of the key
+          Effect: Allow
+          Principal:
+            AWS: !Ref LambdaRoleArn
+          Action:
+          - kms:DescribeKey
+          - kms:Encrypt
+          - kms:Decrypt
+          - kms:ReEncrypt*
+          - kms:GenerateDataKey
+          - kms:GenerateDataKeyWithoutPlaintext
+          Resource: '*'
+
+  KMSKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties: 
+      AliasName: !Sub "alias/${Project}-${Environment}-kms-key"
+      TargetKeyId: !Ref KMSKey
+
+
+Outputs:
+
+  KMSKeyId:
+    Value:  !Ref KMSKey
+    Description: Id of the KMS Key Created
+    Export:
+      Name:  !Sub "${Project}-${Environment}-kms-key-id"
+
+  KMSKeyArn:
+    Value:  !GetAtt KMSKey.Arn
+    Description: Arn of the KMS Key Created
+    Export:
+      Name:  !Sub "${Project}-${Environment}-kms-key-arn"

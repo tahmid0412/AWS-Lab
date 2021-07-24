@@ -1,0 +1,71 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  DevAccountId:
+    Type: String
+    Default: '828852556902'
+  ProdAccountId:
+    Type: String
+    Default: '062823937524'
+  UatAccountId:
+    Type: String
+    Default: '851573698321'
+  DevAccountRoleName:
+    Type: String
+    Default: DevAccessRole
+  ProdAccountRoleName:
+    Type: String
+    Default: ProdAccessRole
+  UatAccountRoleName:
+    Type: String
+    Default: UatAccessRole
+
+  CentralAccountRoleName:
+    Type: String
+    Default: CentralControlRole
+Resources:
+  CentralAccountRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Ref CentralAccountRoleName 
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+      Policies:
+      - PolicyName: AssumeRole
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            - cloudformation:DescribeStacks
+            - lambda:AddPermission
+            - lambda:RemovePermission
+            - events:PutRule
+            - events:DeleteRule
+            - events:PutTargets
+            - events:RemoveTargets
+            Resource:  "*"
+          #- Effect: Allow
+          #  Action:
+          #  - iam:PassRole
+          #  Resource:  !GetAtt ControlPlaneRole.Arn
+          - Action: "sts:AssumeRole"
+            Effect: Allow
+            Resource: !Sub "arn:aws:iam::${DevAccountId}:role/${DevAccountRoleName}"
+          - Action: "sts:AssumeRole"
+            Effect: Allow
+            Resource: !Sub "arn:aws:iam::${ProdAccountId}:role/${ProdAccountRoleName}"
+          - Action: "sts:AssumeRole"
+            Effect: Allow
+            Resource: !Sub "arn:aws:iam::${UatAccountId}:role/${UatAccountRoleName}"
+
+Outputs:
+  CentralAccountRoleArn:
+    Value: !GetAtt CentralAccountRole.Arn   

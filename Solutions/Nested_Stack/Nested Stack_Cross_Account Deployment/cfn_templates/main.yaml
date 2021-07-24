@@ -1,0 +1,427 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Main Stack Template that calls each of stacks to provision infrastructure
+Parameters:
+  Project:
+    Type: String
+    Description: The project name
+  
+  Environment:
+    Type: String
+    Description: Evironment For Project
+
+  CreatedBy:
+    Type: String
+    Description: Team Responsible for creating the resource
+  
+  CfnTemplateS3BucketName:
+    Type: String
+    Description: S3 Bucket Name containing CFN TemplateS3Bucket
+
+  CfnTemplateS3BucketKey:
+    Type: String
+    Description: S3 Bucket Key containing CFN TemplateS3Bucket (Folder containing CFN Stacks Template)
+
+
+  # VPC Stack Parameters
+
+  VPCCIDR:
+    Type: String
+    Description: Cidr Range for the VPC
+  
+  ## Subnet 1 Parameters
+  VPCAZ1PublicSubnetCIDR:
+    Type: String
+    Description: CidR For Public Subnet 1
+
+  VPCAZ1PrivateSubnetCIDR:
+    Type: String
+    Description: CidR For Private App Subnet 1
+
+  VPCAZ1RFFSubnetCIDR:
+    Type: String
+    Description: CidR For Private RFF Subnet 1 AZ1
+
+  ## Subnet 2 Parameters
+  VPCAZ2PublicSubnetCIDR:
+    Type: String
+    Description: CidR For Public Subnet 2
+
+  VPCAZ2PrivateSubnetCIDR:
+    Type: String
+    Description: CidR For Private App Subnet 2
+
+  VPCAZ2RFFSubnetCIDR:
+    Type: String
+    Description: CidR For Private RFF Subnet 1 AZ2
+
+  ## Subnet 3 Parameters
+
+  VPCAZ3PublicSubnetCIDR:
+    Type: String
+    Description: CidR For Public Subnet 3
+
+  VPCAZ3PrivateSubnetCIDR:
+    Type: String
+    Description: CidR For Private App Subnet 3
+
+  VPCAZ3RFFSubnetCIDR:
+    Type: String
+    Description: CidR For Private RFF Subnet 1 AZ3
+
+  RFFSubnetsCreation:
+    Type: String
+    Default: "no"
+    Description : Variable to check if RFF Subnets need to be created
+    AllowedValues:
+      - "yes"
+      - "no"
+
+  NatGatewayCreation:
+    Type: String
+    Default: "no"
+    Description : Variable to check if NAT needs to be created
+    AllowedValues:
+      - "yes"
+      - "no"
+
+  LambdaFunctionHandler:
+    Type: String
+    Default: index.handler
+    Description: The name of the method within your code that Lambda calls to execute your function. The format includes the file name. e.g. index.handler
+
+  LambdaFunctionMemory:
+    Type: String
+    Default: 128
+    Description: The amount of memory in MBs available to the function at runtime
+
+  LambdaFunctionRuntime:
+    Type: String
+    Default: python3.8
+    Description: The identifier of the function's runtime. 
+    AllowedValues: [ nodejs10.x, nodejs 14.x, python2.7, python3.6, python3.7, python3.8 ]
+
+  LambdaFunctionLogsRetention:
+    Type: Number
+    Description: Number of days for the Lambda logs to be retained in AWS Cloudwatch
+
+  LambdaFunctionS3Bucket:
+    Type: String
+    Description: Name of S3 Bucket containing lambda code zip file
+
+  LambdaFunctionS3Key:
+    Type: String
+    Description: Path/Key of lambda code zip file in S3 Bucket
+
+  LambdaTimeout:
+    Type: Number
+    Description: The amount of time that Lambda allows a function to run before stopping it
+
+  ApiGatewayStageName:
+    Type: String
+    Default: call
+  
+  ApiGatewayHTTPMethod:
+    Type: String
+    Default: POST
+
+  KMSKeyRotation:
+    Type: String
+    Default: False
+    Description: Boolean value to enable or disable key rotation
+
+  KMSMultiRegion:
+    Type: String
+    Default: False
+    Description: Boolean value to enable or disable multi region
+
+  KMSPendingWindow:
+    Type: String
+    Description: Number of days for the KMS Key to stay in pending state before deletetion
+  
+  DynamoPartitionKeyName:
+    Type: String
+    Description: Name of the Partition Key for the table
+
+  DynamoSortKeyName:
+    Type: String
+    Description: Namr of the Sort Key for the table
+
+  DynamoReadCapacityUnits:
+    Type: String
+    Description: Read Capacity Units
+
+  DynamoWriteCapacityUnits:
+    Type: String
+    Description: Write Capacity Units
+
+  DynamoTableName:
+    Type: String
+    Description: Name of the DynamoDB Table
+
+  S3BucketName:
+    Type: String
+    Description: Name of the S3 Bucket
+
+  S3BucketAccessControlling:
+    Type: String
+    Default: Private
+    AllowedValues:
+      - Private
+      - PublicRead
+      - PublicReadWrite
+      - AuthenticatedRead
+      - LogDeliveryWrite
+      - BucketOwnerRead
+      - BucketOwnerFullControl
+      - AwsExecRead
+    Description: Input for Canned ACL Value
+
+  S3BucketSSE:
+    Type: String
+    Default: AES256
+    AllowedValues:
+      - AES256
+      - aws:kms
+    Description: Input for Server Side Encryption of Bucket 
+
+  S3BucketVersioning:
+    Type: String
+    Default: Suspended
+    AllowedValues: 
+      - Enabled
+      - Suspended
+    Description: Specify versioning for bucket
+    ConstraintDescription: Must specify Enabled or Suspended
+
+  S3WebHosting:
+    Type: String
+    Default: Suspended
+    AllowedValues:
+      - Enabled
+      - Suspended
+    Description: Decides bucket usage for static web hosting
+
+  S3WebConfigIndexDoc: 
+    Type: String
+    Description: User Specifies index document for static web hosting 
+
+  S3WebConfigErrorDoc: 
+    Type: String
+    Description: User Specifies error document for static web hosting
+
+  SSLCertificateArn:
+    Type:         String
+    Description:  SSL Certificate for HTTPS Traffic
+
+  CloudFrontPriceClass:
+    Type:         String
+    Default:      PriceClass_100
+    Description:  Price Class for CloudFront
+  
+  StaticWebsiteDomain:
+    Type:         String
+    Description:  Domain to be used for the static website
+
+  CloudFrontRootObject:
+    Type: String
+    Description: Default page for the CloudFront Distribution
+
+  CloudFrontHttpVersion:
+    Type: String
+    Description: HTTP or HTTPS Traffic. Use http1.1 for http and  http2 for https
+    AllowedValues: [http1.1, http2]
+
+  CloudFrontAllowedMethods:
+    Type: String
+    Description: Allowed Request mehtods in form of a comma separated list
+  
+  CloudFrontCachedMethods:
+    Type: String
+    Description: Cached Request mehtods in form of a comma separated list
+
+Resources:
+  
+  VPCStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        Project: !Ref Project
+        Environment: !Ref Environment
+        CreatedBy: !Ref CreatedBy
+        VPCCIDR: !Ref VPCCIDR
+        VPCAZ1PublicSubnetCIDR: !Ref VPCAZ1PublicSubnetCIDR
+        VPCAZ1PrivateSubnetCIDR: !Ref VPCAZ1PrivateSubnetCIDR
+        VPCAZ1RFFSubnetCIDR: !Ref VPCAZ1RFFSubnetCIDR
+        VPCAZ2PublicSubnetCIDR: !Ref VPCAZ2PublicSubnetCIDR
+        VPCAZ2PrivateSubnetCIDR: !Ref VPCAZ2PrivateSubnetCIDR
+        VPCAZ2RFFSubnetCIDR: !Ref VPCAZ2RFFSubnetCIDR
+        VPCAZ3PublicSubnetCIDR: !Ref VPCAZ3PublicSubnetCIDR
+        VPCAZ3PrivateSubnetCIDR: !Ref VPCAZ3PrivateSubnetCIDR
+        VPCAZ3RFFSubnetCIDR: !Ref VPCAZ3RFFSubnetCIDR
+        RFFSubnetsCreation: !Ref RFFSubnetsCreation
+        NatGatewayCreation: !Ref NatGatewayCreation
+      Tags: 
+        - 
+          Key : "Name"
+          Value : !Sub "${Project}-${Environment}-VPC-Stack"
+      TemplateURL: !Sub "https://${CfnTemplateS3BucketName}.s3.amazonaws.com/${CfnTemplateS3BucketKey}/vpc.yaml"
+
+  IAMStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        Project: !Ref Project
+        Environment: !Ref Environment
+        CreatedBy: !Ref CreatedBy
+      Tags: 
+        - 
+          Key : "Name"
+          Value : !Sub "${Project}-${Environment}-IAM-Stack"
+      TemplateURL: !Sub "https://${CfnTemplateS3BucketName}.s3.amazonaws.com/${CfnTemplateS3BucketKey}/iam.yaml"
+
+  SecurityGroupsStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        Project: !Ref Project
+        Environment: !Ref Environment
+        CreatedBy: !Ref CreatedBy
+        VpcId: !GetAtt VPCStack.Outputs.VPCId
+      Tags: 
+        - 
+          Key : "Name"
+          Value : !Sub "${Project}-${Environment}-Security-Groups-Stack"
+      TemplateURL: !Sub "https://${CfnTemplateS3BucketName}.s3.amazonaws.com/${CfnTemplateS3BucketKey}/security_groups.yaml"
+
+  LambdaStack:
+    DependsOn: 
+    - VPCStack
+    - DynamoDBStack
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        Project: !Ref Project
+        Environment: !Ref Environment
+        CreatedBy: !Ref CreatedBy
+        LambdaFunctionHandler: !Ref LambdaFunctionHandler
+        LambdaFunctionMemory: !Ref LambdaFunctionMemory
+        LambdaFunctionRuntime: !Ref LambdaFunctionRuntime
+        LambdaFunctionLogsRetention: !Ref LambdaFunctionLogsRetention
+        LambdaFunctionS3Bucket: !Ref LambdaFunctionS3Bucket
+        LambdaFunctionS3Key: !Ref LambdaFunctionS3Key
+        LambdaTimeout: !Ref LambdaTimeout
+        LambdaSecurityGroupIds:
+          Fn::Join:
+            - ","
+            - 
+              - !GetAtt SecurityGroupsStack.Outputs.LambdaSGId
+        LambdaSubnetIds:
+          Fn::Join:
+            - ","
+            - 
+              - !GetAtt VPCStack.Outputs.VPCAZ1PrivateSubnetId
+              - !GetAtt VPCStack.Outputs.VPCAZ2PrivateSubnetId
+              - !GetAtt VPCStack.Outputs.VPCAZ3PrivateSubnetId
+        LambdaIAMRoleArn: !GetAtt IAMStack.Outputs.LambdaIAMRoleArn
+        DynamoTableName: !Ref DynamoTableName
+      Tags: 
+        - 
+          Key : "Name"
+          Value : !Sub "${Project}-${Environment}-Lambda-Stack"
+      TemplateURL: !Sub "https://${CfnTemplateS3BucketName}.s3.amazonaws.com/${CfnTemplateS3BucketKey}/lambda.yaml"
+
+  ApiGatewayStack:
+    DependsOn: LambdaStack
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        Project: !Ref Project
+        Environment: !Ref Environment
+        CreatedBy: !Ref CreatedBy
+        ApiGatewayStageName: !Ref ApiGatewayStageName
+        ApiGatewayHTTPMethod: !Ref ApiGatewayHTTPMethod
+        LambdaFunctionArn: !GetAtt LambdaStack.Outputs.LambdaArn
+      Tags: 
+        - 
+          Key : "Name"
+          Value : !Sub "${Project}-${Environment}-Api-Gateway-Stack"
+      TemplateURL: !Sub "https://${CfnTemplateS3BucketName}.s3.amazonaws.com/${CfnTemplateS3BucketKey}/api_gateway.yaml"
+
+  KMSKeyStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        Project: !Ref Project
+        Environment: !Ref Environment
+        CreatedBy: !Ref CreatedBy
+        KMSKeyRotation: !Ref KMSKeyRotation
+        KMSMultiRegion: !Ref KMSMultiRegion
+        KMSPendingWindow: !Ref KMSPendingWindow
+        LambdaRoleArn: !GetAtt IAMStack.Outputs.LambdaIAMRoleArn
+      Tags: 
+        - 
+          Key : "Name"
+          Value : !Sub "${Project}-${Environment}-KMS-Stack"
+      TemplateURL: !Sub "https://${CfnTemplateS3BucketName}.s3.amazonaws.com/${CfnTemplateS3BucketKey}/kms.yaml"
+
+  S3Stack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        Project: !Ref Project
+        Environment: !Ref Environment
+        CreatedBy: !Ref CreatedBy
+        S3BucketAccessControlling: !Ref S3BucketAccessControlling
+        S3BucketSSE: !Ref S3BucketSSE
+        S3BucketVersioning: !Ref S3BucketVersioning
+        S3WebHosting: !Ref S3BucketVersioning
+        S3WebConfigIndexDoc: !Ref S3WebConfigIndexDoc
+        S3WebConfigErrorDoc: !Ref S3WebConfigErrorDoc
+        S3BucketName: !Ref S3BucketName
+      Tags:
+        - 
+          Key : "Name"
+          Value : !Sub "${Project}-${Environment}-S3-Stack"
+      TemplateURL: !Sub "https://${CfnTemplateS3BucketName}.s3.amazonaws.com/${CfnTemplateS3BucketKey}/s3.yaml"
+
+  CloudFrontStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        Project: !Ref Project
+        Environment: !Ref Environment
+        CreatedBy: !Ref CreatedBy
+        S3BucketName: !Ref S3BucketName
+        SSLCertificateArn: !Ref SSLCertificateArn
+        CloudFrontPriceClass: !Ref CloudFrontPriceClass
+        StaticWebsiteDomain: !Ref StaticWebsiteDomain
+        CloudFrontRootObject: !Ref CloudFrontRootObject
+        CloudFrontHttpVersion: !Ref CloudFrontHttpVersion
+        CloudFrontAllowedMethods: !Ref CloudFrontAllowedMethods
+        CloudFrontCachedMethods: !Ref CloudFrontCachedMethods
+        S3BucketRegionalDomainName: !GetAtt S3Stack.Outputs.S3BucketRegionalDomainName
+
+      Tags:
+        - 
+          Key : "Name"
+          Value : !Sub "${Project}-${Environment}-Cloudfront-Stack"
+      TemplateURL: !Sub "https://${CfnTemplateS3BucketName}.s3.amazonaws.com/${CfnTemplateS3BucketKey}/cloudfront.yaml"
+
+  DynamoDBStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        Project: !Ref Project
+        Environment: !Ref Environment
+        CreatedBy: !Ref CreatedBy
+        DynamoPartitionKeyName: !Ref DynamoPartitionKeyName
+        DynamoSortKeyName: !Ref DynamoSortKeyName
+        DynamoKMSKeyId: !GetAtt KMSKeyStack.Outputs.KMSKeyId
+        DynamoReadCapacityUnits: !Ref DynamoReadCapacityUnits
+        DynamoWriteCapacityUnits: !Ref DynamoWriteCapacityUnits
+        DynamoTableName: !Ref DynamoTableName
+      Tags: 
+        - 
+          Key : "Name"
+          Value : !Sub "${Project}-${Environment}-Dynamo-Stack"
+      TemplateURL: !Sub "https://${CfnTemplateS3BucketName}.s3.amazonaws.com/${CfnTemplateS3BucketKey}/dynamo.yaml"
