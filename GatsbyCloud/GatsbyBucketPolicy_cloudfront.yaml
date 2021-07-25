@@ -2,15 +2,14 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: Policies Template for GatsbyBucketPolicy_CloudFront
 Resources:
   MyCloudfrontPolicy:
-    Type: 'AWS::IAM::Policy'
+    Type: 'AWS::IAM::ManagedPolicy'
     Properties:
-      PolicyName: GatsbyBucketPolicy_S3
+      ManagedPolicyName: GatsbyBucketPolicy_CF
       PolicyDocument:
+        Version: "2012-10-17"
         Statement:
         - Effect: Allow
           Action:
           - cloudfront:CreateInvalidation
           Resource:
           - '*'
-      Groups: 
-          - 'Developers_Thrillworks'
