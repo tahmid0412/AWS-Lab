@@ -1,10 +1,10 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Policies Template for GatsbyBucketPolicy_CloudFront
+Description: Create Policies for GatsbyCloudPolicy_Cloudfront
 Resources:
   MyCloudfrontPolicy:
     Type: 'AWS::IAM::ManagedPolicy'
     Properties:
-      ManagedPolicyName: GatsbyBucketPolicy_CF
+      ManagedPolicyName: GatsbyBucketPolicy_Cloudfront
       PolicyDocument:
         Version: "2012-10-17"
         Statement:

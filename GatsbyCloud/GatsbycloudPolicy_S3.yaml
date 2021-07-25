@@ -1,13 +1,14 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Policies Template for GatsbyBucketPolicy_S3
+Description: Create policy for GatsbyCloudPolicy_S3
 Parameters:
   S3BucketName:
     Type: String
     Description: Name of the S3 Bucket
-
 Resources:
-      Policies:
-      - PolicyName: GatsbyBucketPolicy_S3
+  MyCloudfrontPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+        ManagedPolicyName: GatsbyBucketPolicy_S3
         PolicyDocument:
           Version: '2012-10-17'
           Statement:

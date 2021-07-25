@@ -1,0 +1,51 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Create Policies for CAPABILITY_IAM_POLICY for PowerUser 
+Resources:
+  MyCloudfrontPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      ManagedPolicyName: CAPABILITY_IAM_POLICY1
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Effect: Allow
+          Action:
+          - iam:AddRoleToInstanceProfile
+          - iam:CreatePolicy
+          - iam:CreatePolicyVersion
+          - iam:GenerateCredentialReport
+          - iam:CreateInstanceProfile
+          - iam:Get*
+          - iam:List*
+          - iam:GetRole
+          - iam:PassRole
+          - iam:DeleteRolePolicy
+          - iam:GenerateServiceLastAccessedDetails
+          - iam:PutUserPolicy
+          - iam:CreateRole
+          - iam:DeleteRole
+          - iam:AttachRolePolicy
+          - iam:PutRolePolicy
+          - iam:CreateAccessKey
+          - iam:UpdateAccessKey
+          - iam:ListAccessKey
+          - iam:DeleteAccessKey
+          - iam:CreateUser
+          - iam:ListUsers
+          - iam:DeleteUsers
+          - s3:PutReplicationConfiguration
+          - iam:DeletePolicyVersion
+          - iam:DeletePolicy
+          - iam:PutGroupPolicy
+          Resource:
+          - '*'
+
+
+
+
+
+
+
+
+
+
