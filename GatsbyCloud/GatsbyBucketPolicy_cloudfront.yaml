@@ -12,3 +12,5 @@ Resources:
           - cloudfront:CreateInvalidation
           Resource:
           - '*'
+      Groups: 
+          - 'Developers_Thrillworks'
