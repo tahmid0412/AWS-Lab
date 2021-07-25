@@ -11,7 +11,7 @@ Resources:
     Properties:
       UserName: !Ref IAMUserName
       Path: "/"
-      Group: 
+      Groups: 
         - Developers_Thrillworks
   NewIAMUserAccesskey:
     Type: AWS::IAM::AccessKey
