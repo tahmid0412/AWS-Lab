@@ -1,12 +1,13 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Policies Template for GatsbyBucketPolicy_Cloudfront
-  S3BucketName:
-    Type: String
-    Description: Name of the S3 Bucket
-
+Description: Policies Template for GatsbyBucketPolicy_CloudFront
 Resources:
-          - Effect: Allow
-            Action: 
-            - cloudfront:CreateInvalidation
-            Resource: "*"
-  
+  MyCloudfrontPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: GatsbyBucketPolicy_S3
+      PolicyDocument:
+        Statement:
+        - Effect: Allow
+          Action:
+          - cloudfront:CreateInvalidation
+          Resource: "*"
