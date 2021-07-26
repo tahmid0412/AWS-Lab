@@ -1,0 +1,35 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "*",
+      "Resource": "*"
+    },
+    {
+      "Sid": "DenyAllOutsidecacentral",
+      "Effect": "Deny",
+      "NotAction": [
+        "s3:*",
+        "cloudwatch:*",
+        "organizations:*",
+        "route53:*",
+        "budgets:*",
+        "waf:*",
+        "cloudfront:*",
+        "globalaccelerator:*",
+        "importexport:*",
+        "support:*",
+        "iam:*"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringNotEquals": {
+          "aws:RequestedRegion": [
+            "ca-central-1"
+          ]
+        }
+      }
+    }
+  ]
+}
