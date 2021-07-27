@@ -1,0 +1,25 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Create IAM User & Policies Template
+Parameters:
+  Project:
+    Type: String
+    Description: The project name
+    Default: gatsbycloud
+  Environment:
+    Type: String
+    Description: Evironment For Project
+    Default: dev
+  IAMGroupName:
+    Type: String
+    Description: iam group name
+  CFPolicyArn:
+    Type: String
+    Description: cloudfront policy arn
+Resources:
+  newgroup:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: !Ref IAMGroupName
+      Path: "/"
+      ManagedPolicyArns:
+        - !Ref CFPolicyArn

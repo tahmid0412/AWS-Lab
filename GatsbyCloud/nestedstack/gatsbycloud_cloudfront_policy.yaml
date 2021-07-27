@@ -1,0 +1,31 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Create Policies for GatsbyCloudPolicy_Cloudfront
+Parameters:
+  Project:
+    Type: String
+    Description: The project name
+    Default: gatsbycloud
+  Environment:
+    Type: String
+    Description: Evironment For Project
+    Default: dev
+
+Resources:
+  MyCloudfrontPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      ManagedPolicyName: GatsbyBucketPolicy_Cloudfront
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Effect: Allow
+          Action:
+          - cloudfront:CreateInvalidation
+          Resource:
+          - '*'
+Outputs:
+  CFPolicyArn:
+    Value: !Ref MyCloudfrontPolicy
+    Description: The arn of cloudfront policy
+    Export:
+      Name:  !Sub "${Project}-${Environment}-cf-policy-arn"

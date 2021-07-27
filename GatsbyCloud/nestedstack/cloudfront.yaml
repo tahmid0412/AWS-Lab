@@ -1,0 +1,110 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: S3 that templates that Cloudfront Distributions for S3 bucket
+
+Parameters:
+
+  Project:
+    Type: String
+    Description: The project name
+  
+  Environment:
+    Type: String
+    Description: Evironment For Project
+
+  CreatedBy:
+    Type: String
+    Description: Team Responsible for creating the resource
+  
+  SSLCertificateArn:
+    Type:         String
+    Description:  SSL Certificate for HTTPS Traffic
+
+  CloudFrontPriceClass:
+    Type:         String
+    Default:      PriceClass_100
+    Description:  Price Class for CloudFront
+  
+  StaticWebsiteDomain:
+    Type:         String
+    Description:  Domain to be used for the static website
+
+  S3BucketName:
+    Type: String
+    Description:  Name of the S3 Bucket
+
+  CloudFrontRootObject:
+    Type: String
+    Description: Default page for the CloudFront Distribution
+
+  CloudFrontHttpVersion:
+    Type: String
+    Description: HTTP or HTTPS Traffic. Use http1.1 for http and  http2 for https
+    AllowedValues: [http1.1, http2]
+
+  CloudFrontAllowedMethods:
+    Type: String
+    Description: Allowed Request mehtods in form of a comma separated list
+  
+  CloudFrontCachedMethods:
+    Type: String
+    Description: Cached Request mehtods in form of a comma separated list
+  
+  S3BucketRegionalDomainName:
+    Type: String
+    Description: Regional Domain Name for the S3 Bucket Created
+
+Conditions:
+  IsHTTPSEnabled: !Equals [ !Ref CloudFrontHttpVersion, "http2" ]
+
+Resources:
+  
+  CloudFrontIdentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: !Join ["", ["DuoBank (", !Ref Environment, ") Origin Access Identity"]]
+  
+  CloudFrontDistribution:
+    Type: "AWS::CloudFront::Distribution"
+    Properties:
+      DistributionConfig:
+        Aliases:
+          !If 
+            - IsHTTPSEnabled
+            - 
+              - !Ref StaticWebsiteDomain
+            - !Ref AWS::NoValue
+        Comment: !Join ["", ["DuoBank ", !Ref Environment]]
+        DefaultCacheBehavior:
+          AllowedMethods: !Split [',', !Ref CloudFrontAllowedMethods ]
+          CachedMethods: !Split [',', !Ref CloudFrontCachedMethods ]
+          ForwardedValues:
+            QueryString: 'true'
+            Cookies:
+              Forward: all
+          TargetOriginId:
+            !Join ["", ["S3-origin-", !Sub "${Project}-${Environment}-${AWS::AccountId}-${S3BucketName}"]]
+          ViewerProtocolPolicy: 
+            !If 
+            - IsHTTPSEnabled
+            - redirect-to-https
+            - allow-all
+        DefaultRootObject: !Ref CloudFrontRootObject
+        Enabled: True
+        HttpVersion: !Ref CloudFrontHttpVersion
+        IPV6Enabled: True
+        Origins:
+          - DomainName: !Ref S3BucketRegionalDomainName
+            Id: !Join ["", ["S3-origin-", !Sub "${Project}-${Environment}-${AWS::AccountId}-${S3BucketName}"]]
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${CloudFrontIdentity}"
+        PriceClass: !Ref CloudFrontPriceClass
+        ViewerCertificate: 
+          !If 
+            - IsHTTPSEnabled
+            - 
+              AcmCertificateArn: !Ref SSLCertificateArn
+              MinimumProtocolVersion: TLSv1.2_2018
+              SslSupportMethod: sni-only
+            - !Ref AWS::NoValue
+

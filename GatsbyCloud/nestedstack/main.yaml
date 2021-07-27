@@ -1,0 +1,46 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Main Stack Template that calls each of stacks to provision infrastructure
+Parameters:
+  Project:
+    Type: String
+    Description: The project name
+    Default: gatsbycloud
+  Environment:
+    Type: String
+    Description: Evironment For Project
+    Default: dev
+  CfnTemplateS3BucketName:
+    Type: String
+    Description: Cloudformation template S3 bucket
+  CfnTemplateS3BucketKey:
+    Type: String
+    Description: Cloudformation template S3 bucket folders
+  IAMGroupName:
+    Type: String
+    Description: IAM Group
+
+Resources:
+  IAMPolicyCloudFrontStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        Project: !Ref Project
+        Environment: !Ref Environment
+      Tags: 
+        - 
+          Key : "Name"
+          Value : !Sub "${Project}-${Environment}-IAM-Stack"
+      TemplateURL: !Sub "https://${CfnTemplateS3BucketName}.s3.amazonaws.com/${CfnTemplateS3BucketKey}/gatsbycloud_cloudfront_policy.yaml"
+  IAMGroupStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        Project: !Ref Project
+        Environment: !Ref Environment
+        IAMGroupName: !Ref IAMGroupName
+        CFPolicyArn: !GetAtt IAMPolicyCloudFrontStack.Outputs.CFPolicyArn
+      Tags: 
+        - 
+          Key : "Name"
+          Value : !Sub "${Project}-${Environment}-IAM-Stack"
+      TemplateURL: !Sub "https://${CfnTemplateS3BucketName}.s3.amazonaws.com/${CfnTemplateS3BucketKey}/iam-group.yaml"
