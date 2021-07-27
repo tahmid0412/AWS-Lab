@@ -1,0 +1,22 @@
+[
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "dev"
+  }, 
+  {
+    "ParameterKey": "Project",
+    "ParameterValue": "duobank"
+  }, 
+  {
+    "ParameterKey": "CfnTemplateS3BucketName",
+    "ParameterValue": "duobank-dev-infra-bucket-17f505d6-5f9a-4c24-8434-a31d9a10f61d"
+  },
+  {
+    "ParameterKey": "CfnTemplateS3BucketKey",
+    "ParameterValue": "cfn_template_gatsbycloud"
+  },
+  {
+    "ParameterKey": "IAMGroupName",
+    "ParameterValue": "mygroup"
+  }
+]

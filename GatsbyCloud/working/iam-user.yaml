@@ -1,0 +1,32 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Create IAM User & Policies Template
+
+Parameters:
+  IAMUserName:
+    Type: String
+    Description: IAM User name
+Resources:
+  NewIAMUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Ref IAMUserName
+      Path: "/"
+      Groups: 
+        - Developers_Thrillworks
+  NewIAMUserAccesskey:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName:
+        !Ref NewIAMUser
+      Status: Active
+  AccessKeySecret:
+    Type: AWS::SecretsManager::Secret
+    Properties: 
+      Description: !Sub "These are the credentials for the IAM User ${NewIAMUser}"
+      SecretString: !Join
+        - ''
+        - - '{"AccessKeyId":"'
+          - !Ref NewIAMUserAccesskey
+          - '","SecretAccessKey":"'
+          - !GetAtt NewIAMUserAccesskey.SecretAccessKey
+          - '"}'
