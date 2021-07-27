@@ -1,0 +1,3 @@
+AWS: Allows MFA-authenticated IAM users to manage their own credentials on the My Security Credentials page
+
+https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_aws_my-sec-creds-self-manage.html
